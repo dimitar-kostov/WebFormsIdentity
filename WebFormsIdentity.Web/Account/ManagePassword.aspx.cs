@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
+using System;
+using System.Web;
 
 namespace WebFormsIdentity.Account
 {
@@ -19,7 +15,7 @@ namespace WebFormsIdentity.Account
 
         private bool HasPassword(ApplicationUserManager manager)
         {
-            return manager.HasPassword(User.Identity.GetUserId());
+            return manager.HasPassword(User.Identity.GetUserId().ToGuid());
         }
 
         protected void Page_Load(object sender, EventArgs e)
@@ -55,11 +51,11 @@ namespace WebFormsIdentity.Account
             {
                 var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
                 var signInManager = Context.GetOwinContext().Get<ApplicationSignInManager>();
-                IdentityResult result = manager.ChangePassword(User.Identity.GetUserId(), CurrentPassword.Text, NewPassword.Text);
+                IdentityResult result = manager.ChangePassword(User.Identity.GetUserId().ToGuid(), CurrentPassword.Text, NewPassword.Text);
                 if (result.Succeeded)
                 {
-                    var user = manager.FindById(User.Identity.GetUserId());
-                    signInManager.SignIn( user, isPersistent: false, rememberBrowser: false);
+                    var user = manager.FindById(User.Identity.GetUserId().ToGuid());
+                    signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
                     Response.Redirect("~/Account/Manage?m=ChangePwdSuccess");
                 }
                 else
@@ -75,7 +71,7 @@ namespace WebFormsIdentity.Account
             {
                 // Create the local login info and link the local account to the user
                 var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                IdentityResult result = manager.AddPassword(User.Identity.GetUserId(), password.Text);
+                IdentityResult result = manager.AddPassword(User.Identity.GetUserId().ToGuid(), password.Text);
                 if (result.Succeeded)
                 {
                     Response.Redirect("~/Account/Manage?m=SetPwdSuccess");

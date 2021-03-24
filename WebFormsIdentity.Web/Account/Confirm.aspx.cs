@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
+using System;
 using System.Web;
 using System.Web.UI;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
-using Owin;
 using WebFormsIdentity.Models;
 
 namespace WebFormsIdentity.Account
@@ -23,7 +22,7 @@ namespace WebFormsIdentity.Account
             if (code != null && userId != null)
             {
                 var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                var result = manager.ConfirmEmail(userId, code);
+                var result = manager.ConfirmEmail(userId.ToGuid(), code);
                 if (result.Succeeded)
                 {
                     successPanel.Visible = true;

@@ -349,6 +349,7 @@
     <Compile Include="Identity\IdentityUser.cs" />
     <Compile Include="Identity\RoleStore.cs" />
     <Compile Include="Identity\UserStore.cs" />
+    <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
@@ -373,9 +374,7 @@
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
@@ -388,6 +387,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WebFormsIdentity.Data.EntityFramework\WebFormsIdentity.Data.EntityFramework.csproj">
+      <Project>{5AA40E5A-E061-48E5-9009-8F42E61E9770}</Project>
+      <Name>WebFormsIdentity.Data.EntityFramework</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WebFormsIdentity.Domain\WebFormsIdentity.Domain.csproj">
       <Project>{1B35BB1D-CD0C-46A5-AAFB-6F455DE780AF}</Project>
       <Name>WebFormsIdentity.Domain</Name>

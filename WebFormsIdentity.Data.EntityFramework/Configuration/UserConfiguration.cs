@@ -33,6 +33,12 @@ namespace WebFormsIdentity.Data.EntityFramework.Configuration
                 .HasMaxLength(256)
                 .IsRequired();
 
+            Property(x => x.Email)
+                .HasColumnName("Email")
+                .HasColumnType("nvarchar")
+                .HasMaxLength(256)
+                .IsRequired();
+
             HasMany(x => x.Roles)
                 .WithMany(x => x.Users)
                 .Map(x =>

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using WebFormsIdentity.Models;
+using System;
+using System.Linq;
+using System.Web;
+using System.Web.UI.WebControls;
 
 namespace WebFormsIdentity.Account
 {
@@ -24,22 +20,22 @@ namespace WebFormsIdentity.Account
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            var userId = signinManager.GetVerifiedUserId<ApplicationUser, string>();
-            if (userId == null)
+            var userId = signinManager.GetVerifiedUserId();
+            if (userId == default)
             {
                 Response.Redirect("/Account/Error", true);
             }
             var userFactors = manager.GetValidTwoFactorProviders(userId);
             Providers.DataSource = userFactors.Select(x => x).ToList();
-            Providers.DataBind();            
+            Providers.DataBind();
         }
 
         protected void CodeSubmit_Click(object sender, EventArgs e)
         {
             bool rememberMe = false;
             bool.TryParse(Request.QueryString["RememberMe"], out rememberMe);
-            
-            var result = signinManager.TwoFactorSignIn<ApplicationUser, string>(SelectedProvider.Value, Code.Text, isPersistent: rememberMe, rememberBrowser: RememberBrowser.Checked);
+
+            var result = signinManager.TwoFactorSignIn(SelectedProvider.Value, Code.Text, isPersistent: rememberMe, rememberBrowser: RememberBrowser.Checked);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -63,7 +59,7 @@ namespace WebFormsIdentity.Account
                 Response.Redirect("/Account/Error");
             }
 
-            var user = manager.FindById(signinManager.GetVerifiedUserId<ApplicationUser, string>());
+            var user = manager.FindById(signinManager.GetVerifiedUserId());
             if (user != null)
             {
                 var code = manager.GenerateTwoFactorToken(user.Id, Providers.SelectedValue);

@@ -325,6 +325,7 @@ namespace WebFormsIdentity.Identity
         {
             user.UserId = identityUser.Id;
             user.UserName = identityUser.UserName;
+            user.Email = identityUser.Email;
             user.PasswordHash = identityUser.PasswordHash;
             user.SecurityStamp = identityUser.SecurityStamp;
         }
@@ -344,6 +345,7 @@ namespace WebFormsIdentity.Identity
         {
             identityUser.Id = user.UserId;
             identityUser.UserName = user.UserName;
+            identityUser.Email = user.Email;
             identityUser.PasswordHash = user.PasswordHash;
             identityUser.SecurityStamp = user.SecurityStamp;
         }
