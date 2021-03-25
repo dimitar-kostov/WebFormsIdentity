@@ -39,6 +39,11 @@ namespace WebFormsIdentity.Data.EntityFramework.Configuration
                 .HasMaxLength(256)
                 .IsRequired();
 
+            Property(x => x.EmailConfirmed)
+                .HasColumnName("EmailConfirmed")
+                .HasColumnType("BIT")
+                .IsRequired();
+
             HasMany(x => x.Roles)
                 .WithMany(x => x.Users)
                 .Map(x =>

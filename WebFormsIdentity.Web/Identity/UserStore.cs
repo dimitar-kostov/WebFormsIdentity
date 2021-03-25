@@ -15,7 +15,7 @@ namespace WebFormsIdentity.Identity
         IUserRoleStore<IdentityUser, Guid>,
         IUserPasswordStore<IdentityUser, Guid>,
         IUserSecurityStampStore<IdentityUser, Guid>,
-        IDisposable
+        IUserEmailStore<IdentityUser, Guid>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -326,6 +326,7 @@ namespace WebFormsIdentity.Identity
             user.UserId = identityUser.Id;
             user.UserName = identityUser.UserName;
             user.Email = identityUser.Email;
+            user.EmailConfirmed = identityUser.EmailConfirmed;
             user.PasswordHash = identityUser.PasswordHash;
             user.SecurityStamp = identityUser.SecurityStamp;
         }
@@ -346,8 +347,41 @@ namespace WebFormsIdentity.Identity
             identityUser.Id = user.UserId;
             identityUser.UserName = user.UserName;
             identityUser.Email = user.Email;
+            identityUser.EmailConfirmed = user.EmailConfirmed;
             identityUser.PasswordHash = user.PasswordHash;
             identityUser.SecurityStamp = user.SecurityStamp;
+        }
+
+        public Task SetEmailAsync(IdentityUser user, string email)
+        {
+            user.Email = email;
+            return Task.FromResult(0);
+        }
+
+        public Task<string> GetEmailAsync(IdentityUser user)
+        {
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+            return Task.FromResult(user.Email);
+        }
+
+        public Task<bool> GetEmailConfirmedAsync(IdentityUser user)
+        {
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+            return Task.FromResult(user.EmailConfirmed);
+        }
+
+        public Task SetEmailConfirmedAsync(IdentityUser user, bool confirmed)
+        {
+            user.EmailConfirmed = confirmed;
+            return Task.FromResult(0);
+        }
+
+        public Task<IdentityUser> FindByEmailAsync(string email)
+        {
+            var user = _unitOfWork.UserRepository.FindByEmail(email);
+            return Task.FromResult<IdentityUser>(GetIdentityUser(user));
         }
         #endregion
     }

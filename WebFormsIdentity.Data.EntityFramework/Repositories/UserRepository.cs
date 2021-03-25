@@ -1,5 +1,6 @@
 ﻿using System.Data.Entity;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using WebFormsIdentity.Domain.Entities;
 using WebFormsIdentity.Domain.Repositories;
@@ -26,6 +27,21 @@ namespace WebFormsIdentity.Data.EntityFramework.Repositories
         public Task<User> FindByUserNameAsync(System.Threading.CancellationToken cancellationToken, string username)
         {
             return Set.FirstOrDefaultAsync(x => x.UserName == username, cancellationToken);
+        }
+
+        public User FindByEmail(string email)
+        {
+            return Set.FirstOrDefault(x => x.Email == email);
+        }
+
+        public Task<User> FindByEmailAsync(string email)
+        {
+            return Set.FirstOrDefaultAsync(x => x.Email == email);
+        }
+
+        public Task<User> FindByEmailAsync(CancellationToken cancellationToken, string email)
+        {
+            return Set.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
         }
     }
 }

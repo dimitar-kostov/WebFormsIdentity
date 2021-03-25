@@ -30,12 +30,12 @@ namespace WebFormsIdentity.Account
         {
             var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
 
-            HasPhoneNumber = String.IsNullOrEmpty(manager.GetPhoneNumber(User.Identity.GetUserId().ToGuid()));
+            //HasPhoneNumber = String.IsNullOrEmpty(manager.GetPhoneNumber(User.Identity.GetUserId().ToGuid()));
 
             // Enable this after setting up two-factor authentientication
             //PhoneNumber.Text = manager.GetPhoneNumber(User.Identity.GetUserId()) ?? String.Empty;
 
-            TwoFactorEnabled = manager.GetTwoFactorEnabled(User.Identity.GetUserId().ToGuid());
+            //TwoFactorEnabled = manager.GetTwoFactorEnabled(User.Identity.GetUserId().ToGuid());
 
             LoginsCount = manager.GetLogins(User.Identity.GetUserId().ToGuid()).Count;
 
