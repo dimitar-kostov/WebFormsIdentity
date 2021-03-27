@@ -1,16 +1,20 @@
-﻿using System;
+﻿using Microsoft.AspNet.Identity;
+using System;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
-using Owin;
-using WebFormsIdentity.Models;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class ResetPassword : Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        public ResetPassword(ApplicationUserManager userManager)
+        {
+            UserManager = userManager;
+        }
+
         protected string StatusMessage
         {
             get;
@@ -22,15 +26,13 @@ namespace WebFormsIdentity.Account
             string code = IdentityHelper.GetCodeFromRequest(Request);
             if (code != null)
             {
-                var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
-                var user = manager.FindByName(Email.Text);
+                var user = UserManager.FindByName(Email.Text);
                 if (user == null)
                 {
                     ErrorMessage.Text = "No user found";
                     return;
                 }
-                var result = manager.ResetPassword(user.Id, code, Password.Text);
+                var result = UserManager.ResetPassword(user.Id, code, Password.Text);
                 if (result.Succeeded)
                 {
                     Response.Redirect("~/Account/ResetPasswordConfirmation");

@@ -1,14 +1,19 @@
 ﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
 using System;
-using System.Web;
 using System.Web.UI;
-using WebFormsIdentity.Models;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class Confirm : Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        public Confirm(ApplicationUserManager userManager)
+        {
+            UserManager = userManager;
+        }
+
         protected string StatusMessage
         {
             get;
@@ -21,8 +26,7 @@ namespace WebFormsIdentity.Account
             string userId = IdentityHelper.GetUserIdFromRequest(Request);
             if (code != null && userId != null)
             {
-                var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                var result = manager.ConfirmEmail(userId.ToGuid(), code);
+                var result = UserManager.ConfirmEmail(userId.ToGuid(), code);
                 if (result.Succeeded)
                 {
                     successPanel.Visible = true;

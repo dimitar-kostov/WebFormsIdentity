@@ -1,18 +1,23 @@
 ﻿using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
 using System;
 using System.Web;
-using WebFormsIdentity.Models;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class AddPhoneNumber : System.Web.UI.Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        public AddPhoneNumber(ApplicationUserManager userManager)
+        {
+            UserManager = userManager;
+        }
+
         protected void PhoneNumber_Click(object sender, EventArgs e)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var code = manager.GenerateChangePhoneNumberToken(User.Identity.GetUserId().ToGuid(), PhoneNumber.Text);
-            if (manager.SmsService != null)
+            var code = UserManager.GenerateChangePhoneNumberToken(User.Identity.GetUserId().ToGuid(), PhoneNumber.Text);
+            if (UserManager.SmsService != null)
             {
                 var message = new IdentityMessage
                 {
@@ -20,7 +25,7 @@ namespace WebFormsIdentity.Account
                     Body = "Your security code is " + code
                 };
 
-                manager.SmsService.Send(message);
+                UserManager.SmsService.Send(message);
             }
 
             Response.Redirect("/Account/VerifyPhoneNumber?PhoneNumber=" + HttpUtility.UrlEncode(PhoneNumber.Text));

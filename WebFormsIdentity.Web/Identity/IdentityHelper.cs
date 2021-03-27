@@ -1,25 +1,7 @@
 ﻿using System;
 using System.Web;
-using WebFormsIdentity.Data.EntityFramework;
 
-namespace WebFormsIdentity.Models
-{
-    public class ApplicationUnitOfWork : UnitOfWork
-    {
-        public ApplicationUnitOfWork()
-            : base("DefaultConnection")
-        {
-        }
-
-        public static ApplicationUnitOfWork Create()
-        {
-            return new ApplicationUnitOfWork();
-        }
-    }
-}
-
-#region Helpers
-namespace WebFormsIdentity
+namespace WebFormsIdentity.Identity
 {
     public static class IdentityHelper
     {
@@ -80,4 +62,3 @@ namespace WebFormsIdentity
         }
     }
 }
-#endregion

@@ -1,20 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Security.Principal;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Security;
+using System;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Microsoft.AspNet.Identity;
 
 namespace WebFormsIdentity
 {
     public partial class SiteMaster : MasterPage
     {
+        private readonly IAuthenticationManager _authenticationManager;
+
         private const string AntiXsrfTokenKey = "__AntiXsrfToken";
         private const string AntiXsrfUserNameKey = "__AntiXsrfUserName";
         private string _antiXsrfTokenValue;
+
+        public SiteMaster(IAuthenticationManager authenticationManager)
+        {
+            _authenticationManager = authenticationManager;
+        }
 
         protected void Page_Init(object sender, EventArgs e)
         {
@@ -74,7 +79,7 @@ namespace WebFormsIdentity
 
         protected void Unnamed_LoggingOut(object sender, LoginCancelEventArgs e)
         {
-            Context.GetOwinContext().Authentication.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            _authenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
         }
     }
 

@@ -1,17 +1,28 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using System;
-using System.Web;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class VerifyPhoneNumber : System.Web.UI.Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        private ApplicationSignInManager SignInManager { get; set; }
+
+        public VerifyPhoneNumber(
+            ApplicationUserManager userManager,
+            ApplicationSignInManager signInManager)
+        {
+            UserManager = userManager;
+            SignInManager = signInManager;
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
             var phonenumber = Request.QueryString["PhoneNumber"];
-            var code = manager.GenerateChangePhoneNumberToken(User.Identity.GetUserId().ToGuid(), phonenumber);
+            var code = UserManager.GenerateChangePhoneNumberToken(User.Identity.GetUserId().ToGuid(), phonenumber);
             PhoneNumber.Value = phonenumber;
         }
 
@@ -23,18 +34,15 @@ namespace WebFormsIdentity.Account
                 return;
             }
 
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var signInManager = Context.GetOwinContext().Get<ApplicationSignInManager>();
-
-            var result = manager.ChangePhoneNumber(User.Identity.GetUserId().ToGuid(), PhoneNumber.Value, Code.Text);
+            var result = UserManager.ChangePhoneNumber(User.Identity.GetUserId().ToGuid(), PhoneNumber.Value, Code.Text);
 
             if (result.Succeeded)
             {
-                var user = manager.FindById(User.Identity.GetUserId().ToGuid());
+                var user = UserManager.FindById(User.Identity.GetUserId().ToGuid());
 
                 if (user != null)
                 {
-                    signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
+                    SignInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
                     Response.Redirect("/Account/Manage?m=AddPhoneNumberSuccess");
                 }
             }

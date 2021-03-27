@@ -1,15 +1,22 @@
-﻿using System;
+﻿using Microsoft.AspNet.Identity;
+using Microsoft.Owin.Security;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Web;
-using Microsoft.AspNet.Identity;
-using Microsoft.Owin.Security;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class OpenAuthProviders : System.Web.UI.UserControl
     {
+        private IAuthenticationManager AuthenticationManager { get; set; }
+
+        public OpenAuthProviders(IAuthenticationManager authenticationManager)
+        {
+            AuthenticationManager = authenticationManager;
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (IsPostBack)
@@ -27,7 +34,7 @@ namespace WebFormsIdentity.Account
                 {
                     properties.Dictionary[IdentityHelper.XsrfKey] = Context.User.Identity.GetUserId();
                 }
-                Context.GetOwinContext().Authentication.Challenge(properties, provider);
+                AuthenticationManager.Challenge(properties, provider);
                 Response.StatusCode = 401;
                 Response.End();
             }
@@ -37,7 +44,7 @@ namespace WebFormsIdentity.Account
 
         public IEnumerable<string> GetProviderNames()
         {
-            return Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes().Select(t => t.AuthenticationType);
+            return AuthenticationManager.GetExternalAuthenticationTypes().Select(t => t.AuthenticationType);
         }
     }
 }

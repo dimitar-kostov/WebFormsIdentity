@@ -2,13 +2,28 @@
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using System;
-using System.Web;
 using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class RegisterExternalLogin : System.Web.UI.Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        private ApplicationSignInManager SignInManager { get; set; }
+
+        private IAuthenticationManager AuthenticationManager { get; set; }
+
+        public RegisterExternalLogin(
+            ApplicationUserManager userManager,
+            ApplicationSignInManager signInManager,
+            IAuthenticationManager authenticationManager)
+        {
+            UserManager = userManager;
+            SignInManager = signInManager;
+            AuthenticationManager = authenticationManager;
+        }
+
         protected string ProviderName
         {
             get { return (string)ViewState["ProviderName"] ?? String.Empty; }
@@ -37,31 +52,29 @@ namespace WebFormsIdentity.Account
             }
             if (!IsPostBack)
             {
-                var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                var signInManager = Context.GetOwinContext().Get<ApplicationSignInManager>();
-                var loginInfo = Context.GetOwinContext().Authentication.GetExternalLoginInfo();
+                var loginInfo = AuthenticationManager.GetExternalLoginInfo();
                 if (loginInfo == null)
                 {
                     RedirectOnFail();
                     return;
                 }
-                var user = manager.Find(loginInfo.Login);
+                var user = UserManager.Find(loginInfo.Login);
                 if (user != null)
                 {
-                    signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
+                    SignInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
                     IdentityHelper.RedirectToReturnUrl(Request.QueryString["ReturnUrl"], Response);
                 }
                 else if (User.Identity.IsAuthenticated)
                 {
                     // Apply Xsrf check when linking
-                    var verifiedloginInfo = Context.GetOwinContext().Authentication.GetExternalLoginInfo(IdentityHelper.XsrfKey, User.Identity.GetUserId());
+                    var verifiedloginInfo = AuthenticationManager.GetExternalLoginInfo(IdentityHelper.XsrfKey, User.Identity.GetUserId());
                     if (verifiedloginInfo == null)
                     {
                         RedirectOnFail();
                         return;
                     }
 
-                    var result = manager.AddLogin(User.Identity.GetUserId().ToGuid(), verifiedloginInfo.Login);
+                    var result = UserManager.AddLogin(User.Identity.GetUserId().ToGuid(), verifiedloginInfo.Login);
                     if (result.Succeeded)
                     {
                         IdentityHelper.RedirectToReturnUrl(Request.QueryString["ReturnUrl"], Response);
@@ -90,22 +103,20 @@ namespace WebFormsIdentity.Account
             {
                 return;
             }
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var signInManager = Context.GetOwinContext().GetUserManager<ApplicationSignInManager>();
             var user = new IdentityUser() { UserName = email.Text, Email = email.Text };
-            IdentityResult result = manager.Create(user);
+            IdentityResult result = UserManager.Create(user);
             if (result.Succeeded)
             {
-                var loginInfo = Context.GetOwinContext().Authentication.GetExternalLoginInfo();
+                var loginInfo = AuthenticationManager.GetExternalLoginInfo();
                 if (loginInfo == null)
                 {
                     RedirectOnFail();
                     return;
                 }
-                result = manager.AddLogin(user.Id, loginInfo.Login);
+                result = UserManager.AddLogin(user.Id, loginInfo.Login);
                 if (result.Succeeded)
                 {
-                    signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
+                    SignInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
 
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // var code = manager.GenerateEmailConfirmationToken(user.Id);

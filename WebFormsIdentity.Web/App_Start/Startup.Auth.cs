@@ -2,10 +2,11 @@
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.DataProtection;
+using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
 using System;
 using WebFormsIdentity.Identity;
-using WebFormsIdentity.Models;
 
 namespace WebFormsIdentity
 {
@@ -15,10 +16,8 @@ namespace WebFormsIdentity
         // For more information on configuring authentication, please visit https://go.microsoft.com/fwlink/?LinkId=301883
         public void ConfigureAuth(IAppBuilder app)
         {
-            // Configure the db context, user manager and signin manager to use a single instance per request
-            app.CreatePerOwinContext(ApplicationUnitOfWork.Create);
-            app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
-            app.CreatePerOwinContext<ApplicationSignInManager>(ApplicationSignInManager.Create);
+            // Configure dependencies to use a single instance per request
+            app.CreatePerOwinContext(() => new DataProtectionProviderFactory(app.GetDataProtectionProvider()));
 
             // Enable the application to use a cookie to store information for the signed in user
             // and to use a cookie to temporarily store information about a user logging in with a third party login provider
@@ -64,6 +63,25 @@ namespace WebFormsIdentity
             //    ClientId = "",
             //    ClientSecret = ""
             //});
+
+            app.UseOpenIdConnectAuthentication(
+                new OpenIdConnectAuthenticationOptions
+                {
+                    ClientId = "bee646b3-a47b-4c86-b02c-0d2bf00d017c",
+                    Authority = "https://login.microsoftonline.com/fc2be715-4a94-42dd-832d-9d7dbb73c754",
+                    PostLogoutRedirectUri = "https://localhost:44345/",
+                    RedirectUri = "https://localhost:44345/",
+
+                    Notifications = new OpenIdConnectAuthenticationNotifications()
+                    {
+                        AuthenticationFailed = (context) =>
+                        {
+                            return System.Threading.Tasks.Task.FromResult(0);
+                        }
+                    }
+
+                }
+            );
         }
     }
 }

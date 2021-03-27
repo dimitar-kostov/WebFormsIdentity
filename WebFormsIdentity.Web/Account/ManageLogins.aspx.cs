@@ -3,12 +3,24 @@ using Microsoft.AspNet.Identity.Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class ManageLogins : System.Web.UI.Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        private ApplicationSignInManager SignInManager { get; set; }
+
+        public ManageLogins(
+            ApplicationUserManager userManager,
+            ApplicationSignInManager signInManager)
+        {
+            UserManager = userManager;
+            SignInManager = signInManager;
+        }
+
         protected string SuccessMessage
         {
             get;
@@ -20,15 +32,16 @@ namespace WebFormsIdentity.Account
             private set;
         }
 
-        private bool HasPassword(ApplicationUserManager manager)
+        private bool HasPassword()
         {
-            return manager.HasPassword(User.Identity.GetUserId().ToGuid());
+            return UserManager.HasPassword(
+                User.Identity.GetUserId().ToGuid());
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            CanRemoveExternalLogins = manager.GetLogins(User.Identity.GetUserId().ToGuid()).Count() > 1;
+            CanRemoveExternalLogins = UserManager.GetLogins(
+                User.Identity.GetUserId().ToGuid()).Count() > 1;
 
             SuccessMessage = String.Empty;
             successMessage.Visible = !String.IsNullOrEmpty(SuccessMessage);
@@ -36,22 +49,21 @@ namespace WebFormsIdentity.Account
 
         public IEnumerable<UserLoginInfo> GetLogins()
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var accounts = manager.GetLogins(User.Identity.GetUserId().ToGuid());
-            CanRemoveExternalLogins = accounts.Count() > 1 || HasPassword(manager);
+            var accounts = UserManager.GetLogins(
+                User.Identity.GetUserId().ToGuid());
+
+            CanRemoveExternalLogins = accounts.Count() > 1 || HasPassword();
             return accounts;
         }
 
         public void RemoveLogin(string loginProvider, string providerKey)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var signInManager = Context.GetOwinContext().Get<ApplicationSignInManager>();
-            var result = manager.RemoveLogin(User.Identity.GetUserId().ToGuid(), new UserLoginInfo(loginProvider, providerKey));
+            var result = UserManager.RemoveLogin(User.Identity.GetUserId().ToGuid(), new UserLoginInfo(loginProvider, providerKey));
             string msg = String.Empty;
             if (result.Succeeded)
             {
-                var user = manager.FindById(User.Identity.GetUserId().ToGuid());
-                signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
+                var user = UserManager.FindById(User.Identity.GetUserId().ToGuid());
+                SignInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
                 msg = "?m=RemoveLoginSuccess";
             }
             Response.Redirect("~/Account/ManageLogins" + msg);

@@ -1,31 +1,41 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using System;
-using System.Web;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class ManagePassword : System.Web.UI.Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        private ApplicationSignInManager SignInManager { get; set; }
+
+        public ManagePassword(
+            ApplicationUserManager userManager,
+            ApplicationSignInManager signInManager)
+        {
+            UserManager = userManager;
+            SignInManager = signInManager;
+        }
+
         protected string SuccessMessage
         {
             get;
             private set;
         }
 
-        private bool HasPassword(ApplicationUserManager manager)
+        private bool HasPassword()
         {
-            return manager.HasPassword(User.Identity.GetUserId().ToGuid());
+            return UserManager.HasPassword(User.Identity.GetUserId().ToGuid());
         }
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
             if (!IsPostBack)
             {
                 // Determine the sections to render
-                if (HasPassword(manager))
+                if (HasPassword())
                 {
                     changePasswordHolder.Visible = true;
                 }
@@ -49,13 +59,11 @@ namespace WebFormsIdentity.Account
         {
             if (IsValid)
             {
-                var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                var signInManager = Context.GetOwinContext().Get<ApplicationSignInManager>();
-                IdentityResult result = manager.ChangePassword(User.Identity.GetUserId().ToGuid(), CurrentPassword.Text, NewPassword.Text);
+                IdentityResult result = UserManager.ChangePassword(User.Identity.GetUserId().ToGuid(), CurrentPassword.Text, NewPassword.Text);
                 if (result.Succeeded)
                 {
-                    var user = manager.FindById(User.Identity.GetUserId().ToGuid());
-                    signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
+                    var user = UserManager.FindById(User.Identity.GetUserId().ToGuid());
+                    SignInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
                     Response.Redirect("~/Account/Manage?m=ChangePwdSuccess");
                 }
                 else
@@ -70,8 +78,7 @@ namespace WebFormsIdentity.Account
             if (IsValid)
             {
                 // Create the local login info and link the local account to the user
-                var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                IdentityResult result = manager.AddPassword(User.Identity.GetUserId().ToGuid(), password.Text);
+                IdentityResult result = UserManager.AddPassword(User.Identity.GetUserId().ToGuid(), password.Text);
                 if (result.Succeeded)
                 {
                     Response.Redirect("~/Account/Manage?m=SetPwdSuccess");

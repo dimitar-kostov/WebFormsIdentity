@@ -1,21 +1,40 @@
 ﻿using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using System;
-using System.Web;
+using WebFormsIdentity.Identity;
 
 namespace WebFormsIdentity.Account
 {
     public partial class Manage : System.Web.UI.Page
     {
+        private ApplicationUserManager UserManager { get; set; }
+
+        private ApplicationSignInManager SignInManager { get; set; }
+
+        public Manage(
+            ApplicationUserManager userManager,
+            ApplicationSignInManager signInManager)
+        {
+            UserManager = userManager;
+            SignInManager = signInManager;
+        }
+
         protected string SuccessMessage
         {
             get;
             private set;
         }
 
-        private bool HasPassword(ApplicationUserManager manager)
+        private bool HasPassword()
         {
-            return manager.HasPassword(User.Identity.GetUserId().ToGuid());
+            return UserManager.HasPassword(
+                User.Identity.GetUserId().ToGuid());
+        }
+
+        private int GetLoginsCount()
+        {
+            return UserManager.GetLogins(
+                User.Identity.GetUserId().ToGuid()).Count;
         }
 
         public bool HasPhoneNumber { get; private set; }
@@ -28,8 +47,6 @@ namespace WebFormsIdentity.Account
 
         protected void Page_Load()
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
             //HasPhoneNumber = String.IsNullOrEmpty(manager.GetPhoneNumber(User.Identity.GetUserId().ToGuid()));
 
             // Enable this after setting up two-factor authentientication
@@ -37,14 +54,12 @@ namespace WebFormsIdentity.Account
 
             //TwoFactorEnabled = manager.GetTwoFactorEnabled(User.Identity.GetUserId().ToGuid());
 
-            LoginsCount = manager.GetLogins(User.Identity.GetUserId().ToGuid()).Count;
-
-            var authenticationManager = HttpContext.Current.GetOwinContext().Authentication;
+            LoginsCount = GetLoginsCount();
 
             if (!IsPostBack)
             {
                 // Determine the sections to render
-                if (HasPassword(manager))
+                if (HasPassword())
                 {
                     ChangePassword.Visible = true;
                 }
@@ -85,17 +100,15 @@ namespace WebFormsIdentity.Account
         // Remove phonenumber from user
         protected void RemovePhone_Click(object sender, EventArgs e)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            var signInManager = Context.GetOwinContext().Get<ApplicationSignInManager>();
-            var result = manager.SetPhoneNumber(User.Identity.GetUserId().ToGuid(), null);
+            var result = UserManager.SetPhoneNumber(User.Identity.GetUserId().ToGuid(), null);
             if (!result.Succeeded)
             {
                 return;
             }
-            var user = manager.FindById(User.Identity.GetUserId().ToGuid());
+            var user = UserManager.FindById(User.Identity.GetUserId().ToGuid());
             if (user != null)
             {
-                signInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
+                SignInManager.SignIn(user, isPersistent: false, rememberBrowser: false);
                 Response.Redirect("/Account/Manage?m=RemovePhoneNumberSuccess");
             }
         }
@@ -103,8 +116,7 @@ namespace WebFormsIdentity.Account
         // DisableTwoFactorAuthentication
         protected void TwoFactorDisable_Click(object sender, EventArgs e)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            manager.SetTwoFactorEnabled(User.Identity.GetUserId().ToGuid(), false);
+            UserManager.SetTwoFactorEnabled(User.Identity.GetUserId().ToGuid(), false);
 
             Response.Redirect("/Account/Manage");
         }
@@ -112,8 +124,7 @@ namespace WebFormsIdentity.Account
         //EnableTwoFactorAuthentication 
         protected void TwoFactorEnable_Click(object sender, EventArgs e)
         {
-            var manager = Context.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            manager.SetTwoFactorEnabled(User.Identity.GetUserId().ToGuid(), true);
+            UserManager.SetTwoFactorEnabled(User.Identity.GetUserId().ToGuid(), true);
 
             Response.Redirect("/Account/Manage");
         }
